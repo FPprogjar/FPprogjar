@@ -42,7 +42,6 @@ if __name__ == '__main__':
 				ip = giliran(n)
 				cek = hitung(ip)
 				if cek == 1 :
-				   gaga=1
 				   #connect ke server
 				else :
 					yeye=cekserver()
