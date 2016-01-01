@@ -2,26 +2,25 @@ import threading
 import socket
 import sys
 
-server =[]
-flag = []
-max = 25000
-banyak = []
+server =[] #array untuk menampung daftar server yang ada
+max = 20000
+banyak = [] #array untuk menampung jumlah koneksi pada setiap server
 n = 0
 
 def giliran(n) :
-	lala= n % 5
+	lala= n % 5 # lala adalah variable untuk menentukan index yang akan digunakan untuk menentukan server
 	return lala
 
 def hitung(a) :
-	if flag[a] < 20000 :
+	#coba adalah variable yang menunjukkan ketersidiaan server dalam menerima koneksi baru
+	if banyak[a] < max :
 	  banyak[a] = banyak[a] + 1
-	  flag[a] = 0
 	  coba = 1
 	else :
 	  coba = 0
 	return coba
 
-def cekserver() :
+def cekserver() : #mengecek jumlah server yang belum penuh
 	count = 0
 	for x in range (0,5) :
 		if hitung[x]==1 :
