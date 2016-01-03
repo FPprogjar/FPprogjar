@@ -1,45 +1,37 @@
-#! /usr/bin/env python3
+import asyncore, socket
 
-import asyncore #https://docs.python.org/2/library/asyncore.html
-import socket
-import threading
-import queue
-import time
-
-fqueue = queue.Queue()
-
-class Handler(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.keep_reading = True
-
-    def run(self):
-        while self.keep_reading:
-            if fqueue.empty():
-                time.sleep(1)
-            else:
-                #PROCESS
-    def stop(self):
-        self.keep_reading = False
-
-
-class Listener(asyncore.dispatcher): #http://effbot.org/librarybook/asyncore.htm
-    def __init__(self, host, port):
-        asyncore.dispatcher.__init__(self)
-        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.connect((host, port))
-
+class HTTPHandler(asyncore.dispatcher):
+    def __init__(self, client, addr, server):
+        asyncore.dispatcher.__init__(self, client)
 
     def handle_read(self):
-        data = self.recv(40) #pretend it always waits for 40 bytes
-        fqueue.put(data)
+        data = self.recv(1024)
+        self.send('HTTP/1.1 200 OK\n\n<html><head></head><body>Hello world!!!</body></html>')
+        self.close()
 
-    def start(self):
-        try:
-            h = Handler()
-            h.start()
-            asyncore.loop()
-        except KeyboardInterrupt:
-            pass
-        finally:
-            h.stop() 
+class HTTPServer(asyncore.dispatcher):
+    def __init__(self):
+
+        HOST = raw_input('Masukkan IP (default: localhost)')
+        if HOST == '' : HOST = 'localhost'
+        PORT = raw_input('Masukkan Port (default:8080)')
+        if PORT == '' : PORT = 8080
+
+        self.addr = (str(HOST), int(PORT))
+
+        asyncore.dispatcher.__init__(self)
+        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        self.set_reuse_addr()
+        self.bind(self.addr)
+        self.listen(5)
+        print 'Load Balancer now Live on port %d' % self.addr[1]
+
+    def handle_accept(self):
+        (client, addr) = self.accept()
+        print 'Request from %s:%s' % (self.addr[0], self.addr[1])
+        HTTPHandler(client, self.addr, self)
+
+if __name__ == '__main__':
+    server = HTTPServer()
+    asyncore.loop()
