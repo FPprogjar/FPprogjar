@@ -23,10 +23,14 @@ class Respon(threading.Thread):
         pecahkan = pecahkan[1::]
         responses = 'HTTP/1.1 200 OK\r\n\r\n'
 
+        # url = /
         if( str(splits[1]) == '/' ) :
             responses = responses + self.openfile( str('404.jpg'))
+        # url matches 'x'.jpg
         elif os.path.isfile(str(pecahkan)+'.jpg'):
                 responses = responses + self.openfile( str(pecahkan)+'.jpg')
+        ''' undefined urls
+          shouldnt be replied actually'''
         else :
             responses = responses + self.openfile( str('404.jpg'))
         self.newConn.send(responses)
@@ -34,11 +38,12 @@ class Respon(threading.Thread):
     def run(self):
         response = ''
         while True:
+            # receiving data
             received = self.newConn.recv(1024)
 
             if received:
-                # print ('Received Request = ' + str(received) )
                 response = response + received
+
                 if(response.endswith("\r\n\r\n")):
                     self.routeConnection(received)
                     break
@@ -52,13 +57,18 @@ class Server(threading.Thread):
         HOST = raw_input('Masukkan IP (default: localhost)\n')
         PORT = raw_input('Masukkan Port (default:8080)\n')
 
+        try : # Error handling
+                self.addr = (str(HOST), int(PORT))
+                self.servsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.servsocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                self.servsocket.bind(self.addr)
+                threading.Thread.__init__(self)
+                print ('Server is running on %s port %s ' %self.addr)
+		except KeyboardInterrupt :
+			pass
+		finally :
+			self.stop()
 
-        self.addr = (str(HOST), int(PORT))
-        self.servsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.servsocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.servsocket.bind(self.addr)
-        threading.Thread.__init__(self)
-        print ('Server is running on %s port %s ' %self.addr)
 
     def openfile(self,nama):
         gigi = open(nama)
