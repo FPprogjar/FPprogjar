@@ -1,8 +1,9 @@
 import asyncore, socket, urllib2
+from datetime import datetime
 
 
 
-SERVER = 'http://localhost'
+_SERVER = 'http://localhost'
 _SERVERPORT = 9000
 BUF_SIZE = 1024
 # server1 =
@@ -10,6 +11,7 @@ BUF_SIZE = 1024
 class HTTPHandler(asyncore.dispatcher):
     def __init__(self, client, addr, server):
         asyncore.dispatcher.__init__(self, client)
+        self.log = '[' + str( datetime.now().strftime('%H:%M:%S')) + '] From ' + str(addr)
 
     def handle_read(self):
         data = self.recv(1024)
@@ -18,12 +20,18 @@ class HTTPHandler(asyncore.dispatcher):
             splits = data.split(" ")
             pecahkan = splits[1]
             pecahkan = pecahkan[1::]
+            responses = 'HTTP/1.1 200 OK\r\n\r\n'
             # print pecahkan
 
-            servers = SERVER + ':' + str(_SERVERPORT) + '/' + pecahkan
-            print servers
-            # socket1.sendall("GET %s HTTP/1.0\n\n" %servers)
-            self.send( urllib2.urlopen(servers).read() )
+            servers = _SERVER + ':' + str(_SERVERPORT) + '/' + pecahkan
+            self.log = self.log + 'forwarded to ' + servers
+            # print servers
+
+            z =  urllib2.urlopen(servers).read()
+            self.send( responses + z )
+
+            self.log = self.log + ' Finished'
+            print self.log
 
 
             # self.end_headers()
@@ -52,7 +60,6 @@ class HTTPServer(asyncore.dispatcher):
 
     def handle_accept(self):
         (client, addr) = self.accept()
-        print 'Request from %s:%s' % (self.addr[0], self.addr[1])
         HTTPHandler(client, self.addr, self)
 
 if __name__ == '__main__':

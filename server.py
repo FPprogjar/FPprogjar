@@ -41,14 +41,12 @@ class Respon(threading.Thread):
         response = ''
         while True:
             # receiving data
-            print 'receiving...'
             received = self.newConn.recv( BUF_SIZE )
-            print 'receiving done '
             if received:
                 response = response + received
 
                 if(response.endswith("\r\n\r\n")):
-                    print 'CRLF detected'
+                    # print 'CRLF detected'
                     self.routeConnection(received)
                     break
             else :
