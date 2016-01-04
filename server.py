@@ -2,8 +2,10 @@ import threading
 import socket
 import os
 from datetime import datetime
-BUF_SIZE = 1024
+BUF_SIZE = 2048
 
+cacheName =  []
+cacheValue = []
 
 class Respon(threading.Thread):
     def __init__(self, newConn, newAddr,nama):
@@ -14,17 +16,29 @@ class Respon(threading.Thread):
         threading.Thread.__init__(self)
 
     def openfile(self,nama):
-        ampas = open(nama)
-        return ampas.read()
+        if nama not in cacheName :
+            print 'DIFFERENT!'
+            readValue =  open(nama).read()
+            cacheName.append ( nama )
+            cacheValue.append ( readValue )
+            return readValue
+        else :
+            indexa = cacheName.index(nama)
+            return cacheValue[indexa]
 
     def routeConnection(self, request):
         splits = request.split(" ")
-        pecahkan = splits[1]
-        pecahkan = pecahkan[1::]
+        try :
+            temp = splits[1]
+            pecahkan = pecahkan[1::]
+        except :
+            temp = ''
+        finally :
+            pecahkan = temp
         responses = 'HTTP/1.1 200 OK\r\n\r\n'
 
 
-        if( str(splits[1]) == '/' ) :
+        if( pecahkan == '' ) :
             responses = responses + self.openfile( str('404.jpg'))
         # url matches 'x'.jpg
         elif os.path.isfile(str(pecahkan)+'.jpg'):
