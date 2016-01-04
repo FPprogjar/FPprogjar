@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 
-SERVER = 'http://localhost'
+_SERVER = 'http://localhost'
 _SERVERPORT = 9000
 BUF_SIZE = 1024
 # server1 =
@@ -11,7 +11,7 @@ BUF_SIZE = 1024
 class HTTPHandler(asyncore.dispatcher):
     def __init__(self, client, addr, server):
         asyncore.dispatcher.__init__(self, client)
-        self.log = str( datetime.now().strftime('%H:%M:%S')) + ' from ' + str(addr)
+        self.log = '[' + str( datetime.now().strftime('%H:%M:%S')) + '] From ' + str(addr)
 
     def handle_read(self):
         data = self.recv(1024)
@@ -23,8 +23,8 @@ class HTTPHandler(asyncore.dispatcher):
             responses = 'HTTP/1.1 200 OK\r\n\r\n'
             # print pecahkan
 
-            servers = SERVER + ':' + str(_SERVERPORT) + '/' + pecahkan
-            self.log = self.log + 'forwarded to ' + _SERVERPORT
+            servers = _SERVER + ':' + str(_SERVERPORT) + '/' + pecahkan
+            self.log = self.log + 'forwarded to ' + servers
             # print servers
 
             z =  urllib2.urlopen(servers).read()
