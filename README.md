@@ -4,9 +4,9 @@
 	Anggota :
 	Ronauli S						5113100142
 	Andi Putra Kusuma		5113100
-	Tikva I. Mooy				5113100
-	Donny Aliyanto			5113100
-	Rifqi								5113100
+	Tikva I. Mooy				5113100169
+	Donny Aliyanto			5113100165
+	Rifqi								5113100170
 
 ###
  	How To Run :
