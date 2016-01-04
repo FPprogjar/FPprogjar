@@ -2,10 +2,8 @@ import threading
 import socket
 import os
 from datetime import datetime
-BUF_SIZE = 512
+BUF_SIZE = 1024
 
-HOST = 'localhost'
-PORT = 8080
 
 class Respon(threading.Thread):
     def __init__(self, newConn, newAddr,nama):
@@ -43,32 +41,39 @@ class Respon(threading.Thread):
         response = ''
         while True:
             # receiving data
+            print 'receiving...'
             received = self.newConn.recv( BUF_SIZE )
-
+            print 'receiving done '
             if received:
                 response = response + received
 
                 if(response.endswith("\r\n\r\n")):
+                    print 'CRLF detected'
                     self.routeConnection(received)
                     break
             else :
                 break
         self.log = self.log + ' finished.'
         print self.log
+
+        # not closed to create persistent connection
         self.newConn.close()
+
 
 #Deklarasi kelas
 class Server(threading.Thread):
     def __init__(self):
         HOST = raw_input('Masukkan IP (default: localhost)')
         if HOST == '' : HOST = 'localhost'
-        PORT = raw_input('Masukkan Port (default:80)')
-        if PORT == '' : PORT = 8080
+        PORT = raw_input('Masukkan Port ( 900 + input anda ; default 9000)')
+        if PORT == '' : PORT = 9000
+        elif PORT != '' : PORT = 9000 + int(PORT)
 
         self.addr = (str(HOST), int(PORT))
         self.servsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.servsocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.servsocket.bind(self.addr)
+
         threading.Thread.__init__(self)
         print ('Server is running on %s port %s ' %self.addr)
 

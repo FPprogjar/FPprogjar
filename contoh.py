@@ -1,4 +1,11 @@
-import asyncore, socket
+import asyncore, socket, urllib2
+
+
+
+SERVER = 'http://localhost'
+_SERVERPORT = 9000
+BUF_SIZE = 1024
+# server1 =
 
 class HTTPHandler(asyncore.dispatcher):
     def __init__(self, client, addr, server):
@@ -6,8 +13,24 @@ class HTTPHandler(asyncore.dispatcher):
 
     def handle_read(self):
         data = self.recv(1024)
-        self.send('HTTP/1.1 200 OK\n\n<html><head></head><body>Hello world!!!</body></html>')
-        self.close()
+
+        if data :
+            splits = data.split(" ")
+            pecahkan = splits[1]
+            pecahkan = pecahkan[1::]
+            # print pecahkan
+
+            servers = SERVER + ':' + str(_SERVERPORT) + '/' + pecahkan
+            print servers
+            # socket1.sendall("GET %s HTTP/1.0\n\n" %servers)
+            self.send( urllib2.urlopen(servers).read() )
+
+
+            # self.end_headers()
+            self.close()
+
+    def handle_close(self):
+        pass
 
 class HTTPServer(asyncore.dispatcher):
     def __init__(self):
@@ -24,7 +47,7 @@ class HTTPServer(asyncore.dispatcher):
 
         self.set_reuse_addr()
         self.bind(self.addr)
-        self.listen(5)
+        self.listen(100000)
         print 'Load Balancer now Live on port %d' % self.addr[1]
 
     def handle_accept(self):
@@ -33,5 +56,6 @@ class HTTPServer(asyncore.dispatcher):
         HTTPHandler(client, self.addr, self)
 
 if __name__ == '__main__':
+
     server = HTTPServer()
     asyncore.loop()
