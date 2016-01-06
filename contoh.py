@@ -1,44 +1,74 @@
-import asyncore, socket, urllib2
+import asyncore, socket, urllib2,threading
+import Queue as q
+import numpy as np
+import pprint as pp
 from datetime import datetime
 
-
-
-_SERVER = 'http://localhost'
-_SERVERPORT = 9000
-BUF_SIZE = 1024
+BUF_SIZE = 2048
 # server1 =
 
+class Workers():
+    def __init__ (self) :   # IP (string) ,
+                            # PORT (int),
+                            # WEIGHT (int)
+                            # used (INT: default 0)
+        self.serverAddr   = [[ 'http://10.151.36.103', 9000 ],
+                             [ 'http://10.151.36.102', 9000 ],
+                             [ 'http://10.151.36.105', 9000 ],
+                             [ 'http://10.151.36.104', 9000 ],
+                             [ 'http://10.151.34.34', 9000 ] ]
+
+        self.arrayServer = np.array ([   [ 17000 , 1],
+                                         [ 18000 , 1],
+                                         [ 32000 , 1],
+                                         [ 24000 , 1],
+                                         [ 9000 , 1]] )
+
+    def getServer(self) :
+        #find the maximum weight divided to request added
+        newArray = [ zi/yi for zi,yi in zip ( self.arrayServer[:,0] , self.arrayServer[:,1] ) ]
+        maxIndex = newArray.index( max(newArray) )
+
+        winningServer = self.arrayServer[maxIndex]
+        # winningServer[0] = winningServer[0] - 1
+        winningServer[1] = winningServer[1] + 1
+
+        return self.serverAddr[maxIndex]
+
 class HTTPHandler(asyncore.dispatcher):
-    def __init__(self, client, addr, server):
+    def __init__(self, client, addr, server, slave):
         asyncore.dispatcher.__init__(self, client)
-        self.log = '[' + str( datetime.now().strftime('%H:%M:%S')) + '] From ' + str(addr)
+        self._SERVER = str(slave[0])
+        self._SERVERPORT = int(slave[1])
+        self.log = '[' + str( datetime.now().strftime('%H:%M:%S')) + '] ' + str(addr)
 
     def handle_read(self):
-        data = self.recv(1024)
+        data = self.recv( BUF_SIZE )
 
         if data :
             splits = data.split(" ")
-            pecahkan = splits[1]
-            pecahkan = pecahkan[1::]
+            try :
+                temp = splits[1]
+                pecahkan = pecahkan[1::]
+            except :
+                temp = ''
+            finally :
+                pecahkan = temp
             responses = 'HTTP/1.1 200 OK\r\n\r\n'
             # print pecahkan
 
-            servers = _SERVER + ':' + str(_SERVERPORT) + '/' + pecahkan
+            servers = self._SERVER + ':' + str(self._SERVERPORT) + '/' + pecahkan
+
             self.log = self.log + 'forwarded to ' + servers
             # print servers
 
             z =  urllib2.urlopen(servers).read()
             self.send( responses + z )
 
-            self.log = self.log + ' Finished'
             print self.log
 
-
-            # self.end_headers()
             self.close()
 
-    def handle_close(self):
-        pass
 
 class HTTPServer(asyncore.dispatcher):
     def __init__(self):
@@ -47,7 +77,7 @@ class HTTPServer(asyncore.dispatcher):
         if HOST == '' : HOST = 'localhost'
         PORT = raw_input('Masukkan Port (default:8080)')
         if PORT == '' : PORT = 8080
-
+        self.slave = Workers()
         self.addr = (str(HOST), int(PORT))
 
         asyncore.dispatcher.__init__(self)
@@ -60,9 +90,8 @@ class HTTPServer(asyncore.dispatcher):
 
     def handle_accept(self):
         (client, addr) = self.accept()
-        HTTPHandler(client, self.addr, self)
+        HTTPHandler(client, addr, self, self.slave.getServer())
 
-if __name__ == '__main__':
 
-    server = HTTPServer()
-    asyncore.loop()
+server = HTTPServer()
+asyncore.loop()

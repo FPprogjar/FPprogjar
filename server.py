@@ -16,6 +16,7 @@ class Respon(threading.Thread):
         threading.Thread.__init__(self)
 
     def openfile(self,nama):
+        # caching content here
         if nama not in cacheName :
             print 'DIFFERENT!'
             readValue =  open(nama).read()

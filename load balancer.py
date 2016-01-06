@@ -2,9 +2,14 @@ import threading
 import socket
 import sys
 
-server =[] #array untuk menampung daftar server yang ada
+server =[]
+#array untuk menampung daftar server yang ada
 max = 20000
-banyak = [] #array untuk menampung jumlah koneksi pada setiap server
+banyak = []
+#array untuk menampung jumlah koneksi pada setiap server
+
+
+
 n = 0
 
 def giliran(n) :
@@ -55,4 +60,3 @@ if __name__ == '__main__':
 					connection.close()
 
 			break
-	
